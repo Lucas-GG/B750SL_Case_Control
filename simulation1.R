@@ -94,7 +94,7 @@ summary(y1)
 
 #now make dataframe for analysis
 
-dat1 <- data.frame(xs1) %>%
+dat1 <- data.frame(xs) %>%
   mutate(z = z,
          y = y1) %>%
   select(y, z, everything())

@@ -31,19 +31,8 @@ sim1i_bs <- data.frame(
                    })
   )
 
-# just testing for scenario 1
-a = -1
-b4 = -0.4
-b6 = 0.4
-b8 = 0.4
-b9 = -0.4
-b10 = 0.25
-gamma = 0.05
 
-# b4x6, b4x8, b6x8
-#generate beta vector, including the 3 interactions
-bs = c(0, 0, 0, b4, 0, b6, 0, b8, b9, b10, rep(0, 40), -.4, .4, .4)
-
+# SCENARIO 1
 
 #simulate the correlated bernoulli vars
 # followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
@@ -80,7 +69,7 @@ r4<- rmvbin(n = n, margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 1
 summary(round(cor(r4), 2))
 
 # generate NULL matrix placeholder
-xs1 <- matrix(rep(NA, nvar*n), ncol = nvar)
+xs <- matrix(rep(NA, nvar*n), ncol = nvar)
 
 # insert the generated variables
 xs[,c(4,6,8,9,10)] <- r1
@@ -95,7 +84,75 @@ summary(xs)
 # add known interaction terms for easy generation of Ys
 xs_inter <- cbind(xs, xs[,4]*xs[,6], xs[,4]*xs[,8], xs[,6]*xs[,8])
 
-outcome <- rep(a, n) + colSums(t(xs_inter)*bs) + gamma*z
+outcome <- rep(sim1i_bs$a[1], n) + colSums(t(xs_inter)*(sim1i_bs$bs[[1]])) + (sim1i_bs$gamma[1])*z
+
+pr1 <- exp(outcome)/(1+exp(outcome))
+runis = runif(n, 0, 1)
+y1 = ifelse(runis < pr1, 1, 0)
+
+summary(y1)
+
+#now make dataframe for analysis
+
+dat1 <- data.frame(xs1) %>%
+  mutate(z = z,
+         y = y1) %>%
+  select(y, z, everything())
+
+
+# SCENARIO 2
+
+#simulate the correlated bernoulli vars
+# followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
+
+# variables associated with y
+# in scenario i they are independent from each other i.e. correlation = 0
+m1 <- matrix(0, 5,5)
+diag(m1) <- 1
+r1 <- rmvbin(n=n, margprob = c(.4, .6, .5, .3, .15), bincorr = m1)
+round(cor(r_1),2)
+
+#variables independent of Y given X4, X6, X8, X9, X10
+##TODO clarify how to generate these as independent of Y given the above Xs
+m2 <- matrix(0, 5, 5)
+diag(m2) <- 1
+r2 <- rmvbin(n = n, margprob = c(.4, .4, .4, .25, .2), bincorr = m2)
+round(cor(r2), 2)
+
+# generate remaining 40 variables
+# independent of each other
+
+#x11-x15 - separating here bc in later simulations they have diff structure
+m3 <- matrix(0, 5, 5)
+diag(m3) <- 1
+r3 <- rmvbin(n = n, margprob = c(rep(.1, 5)),
+             bincorr = m3)
+round(cor(r3), 2)
+
+# x16-50 independent from each other with marginal probability of success as in web table 1
+m4 <- matrix(0, 35, 35)
+diag(m4) <- 1
+r4<- rmvbin(n = n, margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 10)),
+            bincorr = m4)
+summary(round(cor(r4), 2))
+
+# generate NULL matrix placeholder
+xs <- matrix(rep(NA, nvar*n), ncol = nvar)
+
+# insert the generated variables
+xs[,c(4,6,8,9,10)] <- r1
+xs[,c(1,2,3,5,7)] <- r2
+xs[,c(11:15)] <- r3
+xs[,c(16:nvar)] <- r4
+
+# check that probabilities look right given setup
+summary(xs)
+# yep!
+
+# add known interaction terms for easy generation of Ys
+xs_inter <- cbind(xs, xs[,4]*xs[,6], xs[,4]*xs[,8], xs[,6]*xs[,8])
+
+outcome <- rep(sim1i_bs$a[1], n) + colSums(t(xs_inter)*(sim1i_bs$bs[[1]])) + (sim1i_bs$gamma[1])*z
 
 pr1 <- exp(outcome)/(1+exp(outcome))
 runis = runif(n, 0, 1)

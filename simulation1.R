@@ -8,7 +8,7 @@ library(bindata)
 
 set.seed(1219)
 
-n = 250
+n = 2500
 nvar = 50
 
 # all 4 scenarios data generation parameters
@@ -31,6 +31,9 @@ sim1i_bs <- data.frame(
                    })
   )
 
+
+z <- as.numeric(cut(1:n, quantile(1:n, seq(0, 1, .1)), include.lowest = TRUE))
+table(z)
 
 # SCENARIO 1
 
@@ -98,6 +101,24 @@ dat1 <- data.frame(xs) %>%
   mutate(z = z,
          y = y1) %>%
   select(y, z, everything())
+
+#generate matched case-control
+n_pairs <- 25 #per z type
+
+dat1m <-
+  dat1 %>%
+  group_by(paste0(z, y)) %>%
+  mutate(id = z * 10000 + 1:n()) %>%
+  group_by(z) %>%
+  mutate(mcc = id %in% sample(unique(id[y == 1]), n_pairs)) %>%
+  filter(mcc) %>%
+  ungroup
+
+with(dat1m, table(y, z))
+
+saveRDS(dat1m, "data/dat1m")
+
+
 
 
 # SCENARIO 2

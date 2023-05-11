@@ -24,8 +24,8 @@ pclogit <- function(df, nboot = 20, alpha = 1) {
 
     ###.- point estimate
     cll1     <- clogitL1(x, y, id, alpha = alpha)
-    clcv     <- cv.clogitL1(cll1)
-    beta_hat <- summary(clcv)$beta_minCV
+    clcv     <- cv.clogitL1(cll1) #10-fold cross-validation to find optimal penalty
+    beta_hat <- summary(clcv)$beta_minCV # whole dataset used to compute estimates at optimum
 
 
     ###.-inference (95% CI)

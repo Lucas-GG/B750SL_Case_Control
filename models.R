@@ -16,7 +16,7 @@ library(parallel)
 #' http://www.jstatsoft.org/v58/i12/
 
 pclogit <- function(df, nboot = 20
-    , alpha = 1,  mc_cores = 1, num_folds = 5) {
+    , alpha = 1,  mc_cores = 2, num_folds = 5) {
     #a large number since the distribution will not be normal
     x  <-  df[, grep("X", colnames(df))]
     y  <-  df$y
@@ -42,9 +42,8 @@ pclogit <- function(df, nboot = 20
         , sample(id, length(id), replace = TRUE)
         , simplify = FALSE)
 
-    #boot_est   <- mclapply(ids, estmtr, mc.cores = mc_cores)
-    #boot_est   <- simplify2array(boot_est)
-    boot_est   <- sapply(ids, estmtr)
+    boot_est   <- mclapply(ids, estmtr, mc.cores = mc_cores)
+    boot_est   <- simplify2array(boot_est)
     beta_se    <- apply(boot_est, 1, sd)
     beta_lw    <- apply(boot_est, 1, quantile, .025)
     beta_up    <- apply(boot_est, 1, quantile, .975)
@@ -91,7 +90,7 @@ library(clogitLasso)
 #' http://www.jstatsoft.org/v58/i12/
 
 lclogit <- function(df, nboot = 20
-    ,  mc_cores = 1, num_folds = 5) {
+    ,  mc_cores = 2, num_folds = 5) {
     #a large number since the distribution will not be normal
     x  <-  as.matrix(df[, grep("X", colnames(df))])
     y  <-  df$y

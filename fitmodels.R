@@ -5,19 +5,9 @@ options(mc.cores = parallel::detectCores())
 options(help_type = "html")
 set.seed(0203)
 
-#sapply(list.files("R/", ".R", full.names = TRUE), source)
-#X4, X6, X8, X9 and X10
 
-# TPR true positive rate
-# FPR false positive rate
-# CI covarage (agerage? )
-betas <- saveRDS(sim1i_bs, "data/sim1i_bs")
-dim(sim1i_bs)
 
 df    <- readRDS("data/dat1")
-df  <- df[order(df$rep, df$id, - df$y), ]
-
-
 source("models.R")
 
 
@@ -26,37 +16,59 @@ source("models.R")
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    mclapply(split(df, df$rep), pclogit
-    , nboot = 200)
+    lapply(c(13, 19, 20, 24, 36), \(i) {
+    beta  <- pclogit(df[df$rep == i, ], nboot = 200, mc_cores = 20)
+    saveRDS(beta, paste0("data/fit_l/s1_fit_plogit_", i))
+    })
 end <- Sys.time()
 end - start
 
-# 10.3 secs with 100 boot with 5cv (1) 20:1
-#about 2.3 mins with 100 boot with 10cv 1:2,1
-#about 1.18 mins with 100 boot with 5cv 1:2,1
-#about 1.21 mins with 100 boot with 5cv 1:4,1
-#about 1.25 mins with 100 boot with 5cv 1:10,1
-#about 1.25 mins with 100 boot with 5cv 1:15,1
-#about 1.25 mins with 100 boot with 5cv 1:18,1
-#about 2.33 mins with 200 boot with 5cv (2):1
-#about 2.33 mins with 200 boot with 5cv (2):1
+summary(df[df$rep == 13, ])
+# 10  in ~2 min
+# error with c(13, 19, 20, 24, 36)
+
+list_files <- list.files("data/fit_l", full.names = TRUE)
+list_dat   <- lapply(list_files, \(f) data.frame(readRDS(f)))
+arr        <- abind::abind(list_dat, along = 3)
+saveRDS(arr, "data/fit_lasso.rds")
 
 #===============================================================================
 #Bayesian clogit
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    mclapply(split(df, df$rep)[1:5], bclogit, 3, 500)
+    lapply(49:50, \(i) {
+    beta  <-  bclogit(df[df$rep == i, ],  4, 1000)
+    saveRDS(beta, paste0("data/fit_b/fit", i))
+    })
 end <- Sys.time()
 end - start
 
 
+# 2 in 30 sec
+# error with 48 (thre are 3 unpaired)
+
+list_files <- list.files("data/fit_b", full.names = TRUE)
+list_dat   <- lapply(list_files, \(f) data.frame(readRDS(f)))
+arr        <- abind::abind(list_dat, along = 3)
+saveRDS(arr, "data/fit_bayes.rds")
+
 #===============================================================================
-#lasso clogit alternative algorithm
+#ridge clogit
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    mclapply(split(df, df$rep)[1:5], lclogit
-        , 1, 100)
+    lapply(1:50, \(i) {
+    beta  <- pclogit(df[df$rep == i, ]
+    , nboot = 200, mc_cores = 18, alpha = 0)
+    saveRDS(beta, paste0("data/fit_r/fit", i))
+    })
 end <- Sys.time()
 end - start
+
+
+
+list_files <- list.files("data/fit_r", full.names = TRUE)
+list_dat   <- lapply(list_files, \(f) data.frame(readRDS(f)))
+arr        <- abind::abind(list_dat, along = 3)
+saveRDS(arr, file = "data/fit_ridge.rds")

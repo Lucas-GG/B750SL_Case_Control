@@ -16,8 +16,8 @@ source("models.R")
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    lapply(c(13, 19, 20, 24, 36), \(i) {
-    beta  <- pclogit(df[df$rep == i, ], nboot = 200, mc_cores = 20)
+    lapply(1:200, \(i) {
+    beta  <- pclogit(df[df$rep == i, ], nboot = 500, mc_cores = 20, alpha = 1)
     saveRDS(beta, paste0("data/fit_l/s1_fit_plogit_", i))
     })
 end <- Sys.time()

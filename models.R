@@ -122,4 +122,4 @@ lclogit <- function(df, nboot = 20
     beta_up    <- apply(boot_est, 1, quantile, .9)
 
     cbind(beta_hat, beta_se, beta_lw, beta_up)
-    }
+}

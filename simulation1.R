@@ -8,7 +8,7 @@ library(bindata)
 
 set.seed(1219)
 
-n    <- 2500
+n    <- 25000
 nvar <- 50
 n_pairs <- 25 #per z type
 z <- as.numeric(cut(1:n, quantile(1:n, seq(0, 1, .1)), include.lowest = TRUE))
@@ -158,11 +158,11 @@ saveRDS(dat1, "data/dat1")
 # variables associated with y
 # in scenario ii they are associated 
 m1 <- matrix(c(1, -.6, -.6, -.6, 1, .65, -.6, .65, 1), 3,3)
-r1 <- rmvbin(n=n, margprob = c(.4, .6, .5), bincorr = m1)
+r1 <- rmvbin(n=n, margprob = c(.4, .6, .5), sigma = m1)
 round(cor(r1),2)
 
 m1b <- matrix(c(1, .6, .6, 1), 2,2)
-r1b <- rmvbin(n=n, margprob = c(.3, .15), bincorr = m1b)
+r1b <- rmvbin(n=n, margprob = c(.3, .15), sigma = m1b)
 round(cor(r1b),2)
 
 #variables independent of Y given X4, X6, X8, X9, X10
@@ -172,7 +172,7 @@ r2a<- rmvbin(n = n, margprob = c(.4, .4, .4), bincorr = m2a)
 round(cor(r2a), 2)
 
 m2b <-  matrix(c(1, .6, .6, 1), 2,2)
-r2b<- rmvbin(n = n, margprob = c(.25, .2), bincorr = m2b)
+r2b<- rmvbin(n = n, margprob = c(.25, .2), sigma = m2b)
 round(cor(r2b), 2)
 
 # generate remaining 40 variables
@@ -181,14 +181,14 @@ round(cor(r2b), 2)
 #x11-x15 - separating here bc in later simulations they have diff structure
 m3 <- matrix(c(1,-.549,.807,-.440,.421,-.549,1,-.566,.318,-.368,.807,-.566,1,-.403,.536,-.44,.318,-.403,1,-.309,.421,-.368,.536,-.309,1), 5, 5)
 r3 <- rmvbin(n = n, margprob = c(.24,.21,.36,.31,.23),
-             bincorr = m3)
+             sigma = m3)
 round(cor(r3), 2)
 
 # x16-50 independent from each other with marginal probability of success as in web table 1
 m4 <- matrix(0, 35, 35)
 diag(m4) <- 1
 r4<- rmvbin(n = n, margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 10)),
-            bincorr = m4)
+            sigma = m4)
 summary(round(cor(r4), 2))
 
 # generate NULL matrix placeholder
@@ -224,6 +224,8 @@ dat2 <- data.frame(xs2) %>%
          y = y2) %>%
   select(y, z, everything())
 
+saveRDS(dat2, file = "data/dat2")
+
 # SCENARIO 3
 
 #simulate the correlated bernoulli vars
@@ -250,7 +252,7 @@ x8 <-  w*map_int(z, ~rbinom(1,1,.x/17.5)) + (1-w)*ru[1]
 
 m1b <- matrix(0, 2,2)
 diag(m1b) <- 1
-r1b <- rmvbin(n=n, margprob = c(.3, .15), bincorr = m1b)
+r1b <- rmvbin(n=n, margprob = c(.3, .15), sigma = m1b)
 round(cor(r1b),2)
 
 #variables independent of Y given X4, X6, X8, X9, X10
@@ -265,7 +267,7 @@ x3 <- 0.55*x8 + 0.45*u3
 
 m2b <- matrix(0, 2,2)
 diag(m2b) <- 1
-r2b <- rmvbin(n = n, margprob = c(.25, .2), bincorr = m2b)
+r2b <- rmvbin(n = n, margprob = c(.25, .2), sigma = m2b)
 round(cor(r2b), 2)
 
 # generate remaining 40 variables
@@ -274,14 +276,14 @@ round(cor(r2b), 2)
 #x11-x15 - separating here bc in later simulations they have diff structure
 m3 <- matrix(c(1,-.549,.807,-.440,.421,-.549,1,-.566,.318,-.368,.807,-.566,1,-.403,.536,-.44,.318,-.403,1,-.309,.421,-.368,.536,-.309,1), 5, 5)
 r3 <- rmvbin(n = n, margprob = c(.24,.21,.36,.31,.23),
-             bincorr = m3)
+             sigma = m3)
 round(cor(r3), 2)
 
 # x16-50 independent from each other with marginal probability of success as in web table 1
 m4 <- matrix(0, 35, 35)
 diag(m4) <- 1
 r4<- rmvbin(n = n, margprob = c(rep(.15, 5), rep(.2, 10), rep(.25, 10), rep(.2, 10)),
-            bincorr = m4)
+            sigma = m4)
 summary(round(cor(r4), 2))
 
 # generate NULL matrix placeholder
@@ -317,6 +319,7 @@ dat3 <- data.frame(xs3) %>%
          y = y3) %>%
   select(y, z, everything())
 
+saveRDS(dat3, file = "data/dat3")
 #===============================================================================
 # SCENARIO 4
 #===============================================================================
@@ -331,7 +334,7 @@ round(cor(r1),2)
 
 
 m1b <- matrix(c(1,.6,.6,1), 2,2)
-r1b <- rmvbin(n=n, margprob = c(.3, .15), bincorr = m1b)
+r1b <- rmvbin(n=n, margprob = c(.3, .15), sigma = m1b)
 round(cor(r1b),2)
 
 #variables independent of Y given X4, X6, X8, X9, X10
@@ -346,7 +349,7 @@ x3 <- 0.25*r1[,3] + 0.75*u3
 
 m2b <- matrix(0, 2,2)
 diag(m2b) <- 1
-r2b<- rmvbin(n = n, margprob = c(.25, .2), bincorr = m2b)
+r2b<- rmvbin(n = n, margprob = c(.25, .2), sigma = m2b)
 round(cor(r2b), 2)
 
 # generate remaining 40 variables
@@ -355,14 +358,14 @@ round(cor(r2b), 2)
 #x11-x15 - separating here bc in later simulations they have diff structure
 m3 <- matrix(c(1,-.549,.807,-.440,.421,-.549,1,-.566,.318,-.368,.807,-.566,1,-.403,.536,-.44,.318,-.403,1,-.309,.421,-.368,.536,-.309,1), 5, 5)
 r3 <- rmvbin(n = n, margprob = c(.24,.21,.36,.31,.23),
-             bincorr = m3)
+             sigma = m3)
 round(cor(r3), 2)
 
 # x16-50 independent from each other with marginal probability of success as in web table 1
 m4 <- matrix(0, 35, 35)
 diag(m4) <- 1
 r4<- rmvbin(n = n, margprob = c(rep(.15, 5), rep(.2, 10), rep(.25, 10), rep(.2, 10)),
-            bincorr = m4)
+            sigma= m4)
 summary(round(cor(r4), 2))
 
 # generate NULL matrix placeholder
@@ -398,24 +401,24 @@ dat4 <- data.frame(xs4) %>%
          y = y4) %>%
   select(y, z, everything())
 
+saveRDS(dat4, "data/dat4")
 
-
-# generate matrix of bernoulli variables
-
-# here there is no correlation structure inside
-# TODO add the 4 proper generated x matrices specific to each scenario
-xs <- matrix(rbinom(n*nvar, 1, .5), ncol = nvar)
-
-# add known interaction terms
-xs_inter <- cbind(xs, xs[,4]*xs[,6], xs[,4]*xs[,8], xs[,6]*xs[,8])
-# generate matching variable Z which follows uniform from 1:10
-z <- runif(n, 1, 10)
-runis = runif(n, 0, 1)
-
-res <- sim1i_bs %>%
-  mutate(
-    outcome = pmap(list(a,bs,gamma), function(xa, xbs, xgamma){
-      rep(xa, n) + colSums(t(xs_inter)*xbs) + xgamma*z}),
-    pr1 = map(outcome, ~exp(.x)/(1+exp(.x))),
-    y1 = map(pr1, ~ifelse(runis < .x, 1, 0))
-  )
+# # generate matrix of bernoulli variables
+# 
+# # here there is no correlation structure inside
+# # TODO add the 4 proper generated x matrices specific to each scenario
+# xs <- matrix(rbinom(n*nvar, 1, .5), ncol = nvar)
+# 
+# # add known interaction terms
+# xs_inter <- cbind(xs, xs[,4]*xs[,6], xs[,4]*xs[,8], xs[,6]*xs[,8])
+# # generate matching variable Z which follows uniform from 1:10
+# z <- runif(n, 1, 10)
+# runis = runif(n, 0, 1)
+# 
+# res <- sim1i_bs %>%
+#   mutate(
+#     outcome = pmap(list(a,bs,gamma), function(xa, xbs, xgamma){
+#       rep(xa, n) + colSums(t(xs_inter)*xbs) + xgamma*z}),
+#     pr1 = map(outcome, ~exp(.x)/(1+exp(.x))),
+#     y1 = map(pr1, ~ifelse(runis < .x, 1, 0))
+#   )

@@ -16,18 +16,18 @@ dimnames(bayes)[[2]] <- c("beta_hat", "beta_lw", "beta_up")
 #===============================================================================
 # proportion of times true preictors are detected (entire CI on either side)
 tpr <- function(array_betas) {
-    apply(
         apply(array_betas[true_pred, , ], 3, \(m) {
             (0 > m[, "beta_lw"] & 0 > m[, "beta_up"]) |
             (0 < m[, "beta_lw"] & 0 < m[, "beta_up"])
             })
-        , 1, mean)
-}
+    )}
 rbind(
 round(tpr(lasso), 3),
 round(tpr(bayes), 3),
 round(tpr(ridge), 3)
 )
+
+
 
 fpr <- function(array_betas) {
     summary(

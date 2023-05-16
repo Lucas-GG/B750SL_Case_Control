@@ -8,8 +8,11 @@ library(bindata)
 
 set.seed(1219)
 
-n = 250
-nvar = 50
+n    <- 2500
+nvar <- 50
+n_pairs <- 25 #per z type
+z <- as.numeric(cut(1:n, quantile(1:n, seq(0, 1, .1)), include.lowest = TRUE))
+table(z)
 
 # all 4 scenarios data generation parameters
 sim1i_bs <- data.frame(
@@ -21,87 +24,134 @@ sim1i_bs <- data.frame(
   b9 = c(-.4, -.4, .5, .75),
   b10 = c(.25, .25, .5, 1),
   b4x6 = c(-.4, -.4, -1.75, 1.5),
-  b4x8 = c(.4,.4,1.5, 1.5),
-  b6x8 = c(.4,.4, -1.75,1.5),
+  b4x8 = c(.4, .4, 1.5, 1.5),
+  b6x8 = c(.4, .4, -1.75, 1.5),
   gamma = c(0.05, 0.05, 0.3, 0.3)
 ) %>%
-  mutate(bs = pmap(list(b4, b6, b8, b9, b10,b4x6, b4x8, b6x8),
-                   function(x4, x6, x8, x9, x10, x46, x48, x68){
-                     c(0, 0, 0, x4, 0, x6, 0, x8, x9, x10, rep(0, 40),x46, x48, x68)
-                   })
+  mutate(bs = pmap(list(b4, b6, b8, b9, b10, b4x6, b4x8, b6x8),
+                   function(x4, x6, x8, x9, x10, x46, x48, x68) {
+                     c(0, 0, 0, x4, 0, x6, 0, x8, x9, x10
+                     , rep(0, 40), x46, x48, x68)
+                     })
   )
 
 
+saveRDS(sim1i_bs, "data/sim1i_bs")
+
+
+
+
+#===============================================================================
 # SCENARIO 1
+#===============================================================================
+#' simulate the correlated bernoulli vars followed this procedure
+#' https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
 
-#simulate the correlated bernoulli vars
-# followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
+s1 <- function(r) {
+  # variables associated with y
+  # in scenario i they are independent from each other i.e. correlation = 0
+  m1 <- matrix(0, 5, 5)
+  diag(m1) <- 1
+  m1
+  r1 <- rmvbin(n = n, margprob = c(.4, .6, .5, .3, .15), bincorr = m1)
+  round(cor(r1), 1)
 
-# variables associated with y
-# in scenario i they are independent from each other i.e. correlation = 0
-m1 <- matrix(0, 5,5)
-diag(m1) <- 1
-r1 <- rmvbin(n=n, margprob = c(.4, .6, .5, .3, .15), bincorr = m1)
-round(cor(r_1),2)
+  #variables independent of Y given X4, X6, X8, X9, X10
+  ##TODO clarify how to generate these as independent of Y given the above Xs
+  #' LGG: It seems that "given" is meaningless in scenario 1 & 2
+  #' since none of the other variables are associated with X4, X6, X8, X9, X10
+  #' they are both marginally and conditionally intendent of Y
+  #' this is different for X1,X2,X3 in scenarios 3 & 4
+  #' which will show a marginal (spurious association)
+  #' due to their association with X4, X6, X8
 
-#variables independent of Y given X4, X6, X8, X9, X10
-##TODO clarify how to generate these as independent of Y given the above Xs
-m2 <- matrix(0, 5, 5)
-diag(m2) <- 1
-r2 <- rmvbin(n = n, margprob = c(.4, .4, .4, .25, .2), bincorr = m2)
-round(cor(r2), 2)
+  m2 <- matrix(0, 5, 5)
+  diag(m2) <- 1
+  r2 <- rmvbin(n = n, margprob = c(.4, .4, .4, .25, .2), bincorr = m2)
+  round(cor(r2), 1)
 
-# generate remaining 40 variables
-# independent of each other
+  # generate remaining 40 variables
+  # independent of each other
 
-#x11-x15 - separating here bc in later simulations they have diff structure
-m3 <- matrix(0, 5, 5)
-diag(m3) <- 1
-r3 <- rmvbin(n = n, margprob = c(rep(.1, 5)),
-             bincorr = m3)
-round(cor(r3), 2)
+  #x11-x15 - separating here bc in later simulations they have diff structure
+  m3 <- matrix(0, 5, 5)
+  diag(m3) <- 1
+  r3 <- rmvbin(n = n, margprob = c(rep(.1, 5)),
+              bincorr = m3)
+  round(cor(r3), 1)
 
-# x16-50 independent from each other with marginal probability of success as in web table 1
-m4 <- matrix(0, 35, 35)
-diag(m4) <- 1
-r4<- rmvbin(n = n, margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 10)),
-             bincorr = m4)
-summary(round(cor(r4), 2))
+  # x16-50 independent from each other 
+  #with marginal probability of success as in web table 1
+  m4 <- matrix(0, 35, 35)
+  diag(m4) <- 1
+  r4 <- rmvbin(n = n
+        , margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 10))
+        , bincorr = m4)
+  summary(round(cor(r4), 1))
 
-# generate NULL matrix placeholder
-xs <- matrix(rep(NA, nvar*n), ncol = nvar)
+  # generate NULL matrix placeholder
+  xs <- matrix(rep(NA, nvar * n), ncol = nvar)
 
-# insert the generated variables
-xs[,c(4,6,8,9,10)] <- r1
-xs[,c(1,2,3,5,7)] <- r2
-xs[,c(11:15)] <- r3
-xs[,c(16:nvar)] <- r4
+  # insert the generated variables
+  xs[, c(4, 6, 8, 9, 10)] <- r1
+  xs[, c(1, 2, 3, 5, 7)] <- r2
+  xs[, c(11:15)] <- r3
+  xs[, c(16:nvar)] <- r4
 
-# check that probabilities look right given setup
-summary(xs)
-# yep!
+  # check that probabilities look right given setup
+  summary(xs)
+  # yep!
 
-# add known interaction terms for easy generation of Ys
-xs_inter <- cbind(xs, xs[,4]*xs[,6], xs[,4]*xs[,8], xs[,6]*xs[,8])
+  # add known interaction terms for easy generation of Ys
+  #xs_inter <- cbind(xs, xs[, 4] * xs[, 6], xs[, 4] * xs[, 8], xs[, 6] * xs[, 8])
 
-outcome <- rep(sim1i_bs$a[1], n) + colSums(t(xs_inter)*(sim1i_bs$bs[[1]])) + (sim1i_bs$gamma[1])*z
-
-pr1 <- exp(outcome)/(1+exp(outcome))
-runis = runif(n, 0, 1)
-y1 = ifelse(runis < pr1, 1, 0)
-
-summary(y1)
-
-#now make dataframe for analysis
-
-dat1 <- data.frame(xs) %>%
-  mutate(z = z,
-         y = y1) %>%
-  select(y, z, everything())
+  #outcome <- rep(sim1i_bs$a[1], n) +
+  #            colSums(t(xs_inter) * (sim1i_bs$bs[[1]])) +
+  #            (sim1i_bs$gamma[1]) * z
 
 
+
+  # can we create a matrix with the predictors that mater?
+  X <- cbind(1, xs[, 4], xs[, 6], xs[, 8], xs[, 9], xs[, 10]
+            , xs[, 4] * xs[, 6], xs[, 4] * xs[, 8], xs[, 6] * xs[, 8], z)
+
+
+  outcome  <- X %*% t(sim1i_bs[2:11][1, ])
+  pr1      <- plogis(outcome)
+  runis    <- runif(n, 0, 1)
+  y1       <- as.numeric(runis < pr1)
+
+  #now make dataframe for analysis
+
+  dat1 <- data.frame(xs) %>%
+    mutate(z = z,
+           y = y1) %>%
+    select(y, z, everything())
+
+  #generate matched case-control
+  dat1m <-
+    dat1 %>%
+    group_by(strata = paste0(z, y)) %>%
+    mutate(id = z * 10000 + 1:n()) %>%
+    group_by(z) %>%
+    mutate(mcc = id %in% sample(unique(id[y == 1]), n_pairs)) %>%
+    filter(mcc) %>%
+    mutate(rep = r, mcc = NULL,  strata = NULL) %>%
+    ungroup
+
+  dat1m
+}
+
+dat1 <- map_df(1:50, s1)
+summary(dat1)
+
+saveRDS(dat1, "data/dat1")
+
+
+
+#===============================================================================
 # SCENARIO 2
-
+#===============================================================================
 #simulate the correlated bernoulli vars
 # followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
 
@@ -215,7 +265,7 @@ x3 <- 0.55*x8 + 0.45*u3
 
 m2b <- matrix(0, 2,2)
 diag(m2b) <- 1
-r2b<- rmvbin(n = n, margprob = c(.25, .2), bincorr = m2b)
+r2b <- rmvbin(n = n, margprob = c(.25, .2), bincorr = m2b)
 round(cor(r2b), 2)
 
 # generate remaining 40 variables
@@ -267,8 +317,9 @@ dat3 <- data.frame(xs3) %>%
          y = y3) %>%
   select(y, z, everything())
 
+#===============================================================================
 # SCENARIO 4
-
+#===============================================================================
 #simulate the correlated bernoulli vars
 # followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
 
@@ -368,4 +419,3 @@ res <- sim1i_bs %>%
     pr1 = map(outcome, ~exp(.x)/(1+exp(.x))),
     y1 = map(pr1, ~ifelse(runis < .x, 1, 0))
   )
-

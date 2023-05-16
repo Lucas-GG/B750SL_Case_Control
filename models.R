@@ -45,8 +45,8 @@ pclogit <- function(df, nboot = 20
     boot_est   <- mclapply(ids, estmtr, mc.cores = mc_cores)
     boot_est   <- simplify2array(boot_est)
     beta_se    <- apply(boot_est, 1, sd)
-    beta_lw    <- apply(boot_est, 1, quantile, .025)
-    beta_up    <- apply(boot_est, 1, quantile, .975)
+    beta_lw    <- apply(boot_est, 1, quantile, .1)
+    beta_up    <- apply(boot_est, 1, quantile, .9)
 
     cbind(beta_hat, beta_se, beta_lw, beta_up)
     }
@@ -74,7 +74,7 @@ bclogit  <- function(df, chains = 1, iter = 500) {
 
   betas <- summary(bcl,
     pars = "beta",
-    probs = c(0.025, 0.975),
+    probs = c(0.1, 0.9),
     )
 
   as.data.frame(betas)[, c(1, 4, 5)]
@@ -118,8 +118,8 @@ lclogit <- function(df, nboot = 20
     boot_est   <- mclapply(ids, estmtr, mc.cores = mc_cores)
     boot_est   <- simplify2array(boot_est)
     beta_se    <- apply(boot_est, 1, sd)
-    beta_lw    <- apply(boot_est, 1, quantile, .025)
-    beta_up    <- apply(boot_est, 1, quantile, .975)
+    beta_lw    <- apply(boot_est, 1, quantile, .1)
+    beta_up    <- apply(boot_est, 1, quantile, .9)
 
     cbind(beta_hat, beta_se, beta_lw, beta_up)
-    }
+}

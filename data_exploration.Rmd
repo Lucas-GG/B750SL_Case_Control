@@ -1,0 +1,65 @@
+---
+title: "Untitled"
+author: "Margaret Janiczek"
+date: "2023-05-16"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+$logit[Pr(Y = 1| \mathbf{X}, Z] = \alpha + \beta^T\mathbf{X} + \gamma Z $
+
+```{r}
+dat1 <- readRDS("data/dat1")
+
+dat2 <- readRDS("data/dat2")
+
+dat3 <- readRDS("data/dat3")
+
+dat4 <- readRDS("data/dat4")
+
+
+```
+
+Scenario 1
+
+```{r}
+
+M1 <- cor(dat1 %>%
+  select(starts_with("X")))
+corrplot(M1, method = "color", title = "Scenario 1", tl.pos = 'n')
+```
+
+Scenario 2
+
+```{r}
+
+M2 <- cor(dat2 %>%
+  select(starts_with("X")))
+corrplot(M2, method = "color",  title = "Scenario 2", tl.pos = 'n')
+```
+
+Scenario 3
+
+```{r}
+
+M3 <- cor(dat3 %>%
+  select(starts_with("X")))
+corrplot(M3, method = "color", title = "Scenario 3", tl.pos = 'n')
+```
+
+Scenario 4
+
+```{r}
+
+library(corrplot)
+M <- cor(dat4 %>%
+  select(starts_with("X")))
+corrplot(M, method = "color",  title = "Scenario 4", tl.pos = 'n')
+```
+
+

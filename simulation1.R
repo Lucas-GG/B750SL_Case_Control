@@ -226,7 +226,9 @@ dat2 <- data.frame(xs2) %>%
 
 saveRDS(dat2, file = "data/dat2")
 
+#################
 # SCENARIO 3
+#################
 
 #simulate the correlated bernoulli vars
 # followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
@@ -261,9 +263,13 @@ u1 <- rbinom(n, 1, .4)
 u2 <- rbinom(n, 1, .4)
 u3 <- rbinom(n, 1, .4)
 
-x1 <- 0.55*x4 + 0.45*u1
-x2 <- 0.55*x6+ 0.45*u2
-x3 <- 0.55*x8 + 0.45*u3
+p1 <- 0.55*x4 + 0.45*u1
+p2 <- 0.55*x6+ 0.45*u2
+p3 <- 0.55*x8 + 0.45*u3
+
+x1 <- rbinom(n, 1, p1)
+x2 <- rbinom(n, 1, p2)
+x3 <- rbinom(n, 1, p3)
 
 m2b <- matrix(0, 2,2)
 diag(m2b) <- 1
@@ -343,9 +349,13 @@ u1 <- rbinom(n, 1, .4)
 u2 <- rbinom(n, 1, .4)
 u3 <- rbinom(n, 1, .4)
 
-x1 <- 0.25*r1[,1] + 0.75*u1
-x2 <- 0.25*r1[,2]+ 0.75*u2
-x3 <- 0.25*r1[,3] + 0.75*u3
+p1 <- 0.25*r1[,1] + 0.75*u1
+p2 <- 0.25*r1[,2]+ 0.75*u2
+p3 <- 0.25*r1[,3] + 0.75*u3
+
+x1 <- rbinom(n, 1, p1)
+x2 <- rbinom(n, 1, p2)
+x3 <- rbinom(n, 1, p3)
 
 m2b <- matrix(0, 2,2)
 diag(m2b) <- 1

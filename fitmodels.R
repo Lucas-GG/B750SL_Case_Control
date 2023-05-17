@@ -9,8 +9,8 @@ set.seed(0203)
 
 
 #df    <- readRDS("data/dat1")
-df    <- readRDS("data/dat2")
-folder_location <- "data/scenario2/"
+df    <- readRDS("data2/dat2")
+folder_location <- "data2/scenario2/"
 # Lucas, I loaded dat4 to run the below. Added folder for "scenario4" and saved results there
 source("models.R")
 
@@ -20,7 +20,7 @@ source("models.R")
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    lapply(c(1:50), \(i) {
+    lapply(c(1), \(i) {
       #adding timeout which should produce null if thing takes more than 600 seconds.
       #If it doesn't then it will save the beta results as usual.
     beta  <- withTimeout({pclogit(df[df$rep == i, ], nboot = 200, mc_cores = 20)}, timeout = 2000, onTimeout= "warning")
@@ -51,8 +51,8 @@ saveRDS(arr, paste0(folder_location,"fit_lasso.rds"))
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    lapply(2:3, \(i) {
-    beta  <-  bclogit(df[df$rep == i, ],  2, 500) # changed to 2 chains and 500 iter just for timing for now
+    lapply(2:50, \(i) {
+    beta  <-  bclogit(df[df$rep == i, ],  2, 2000) # changed to 2 chains and 500 iter just for timing for now
     saveRDS(beta, paste0(folder_location,"fit_b/fit", i))
     })
 

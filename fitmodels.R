@@ -9,8 +9,8 @@ set.seed(0203)
 
 
 #df    <- readRDS("data/dat1")
-df    <- readRDS("data2/dat4")
-folder_location <- "data2/scenario4/"
+df    <- readRDS("data2/dat3")
+folder_location <- "data2/scenario3/"
 # Lucas, I loaded dat4 to run the below. Added folder for "scenario4" and saved results there
 source("models.R")
 
@@ -20,7 +20,7 @@ source("models.R")
 #===============================================================================
 start <- Sys.time()
 betas_pclogit <-
-    lapply(c(1:50), \(i) {
+    lapply(c(30:50), \(i) {
       #adding timeout which should produce null if thing takes more than 600 seconds.
       #If it doesn't then it will save the beta results as usual.
     beta  <- withTimeout({pclogit(df[df$rep == i, ], nboot = 200, mc_cores = 20)}, timeout = 2000, onTimeout= "warning")

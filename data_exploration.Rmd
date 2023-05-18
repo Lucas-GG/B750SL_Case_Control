@@ -7,6 +7,8 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(corrplot)
 ```
 
 ## R Markdown
@@ -14,13 +16,13 @@ knitr::opts_chunk$set(echo = TRUE)
 $logit[Pr(Y = 1| \mathbf{X}, Z] = \alpha + \beta^T\mathbf{X} + \gamma Z $
 
 ```{r}
-dat1 <- readRDS("data/dat1")
+dat1 <- readRDS("data2/dat1")
 
-dat2 <- readRDS("data/dat2")
+dat2 <- readRDS("data2/dat2")
 
-dat3 <- readRDS("data/dat3")
+dat3 <- readRDS("data2/dat3")
 
-dat4 <- readRDS("data/dat4")
+dat4 <- readRDS("data2/dat4")
 
 
 ```
@@ -32,6 +34,29 @@ Scenario 1
 M1 <- cor(dat1 %>%
   select(starts_with("X")))
 corrplot(M1, method = "color", title = "Scenario 1", tl.pos = 'n')
+
+dat1_long <- dat1 %>%
+  select(y, starts_with("X")) %>%
+  pivot_longer(-y, names_prefix = "X") 
+
+dat1_long$name <- factor(dat1_long$name, levels = dat1_long$name)
+
+dat1_long %>%
+  group_by(y, name) %>%
+  summarise(value = sum(value), .groups = 'drop') %>%
+  ungroup() %>%
+  arrange(y, as.numeric(name)) %>%
+  mutate(
+    associated = as.factor(rep(c(0, 0, 0, 1, 0, 1, 0, 1, 1, 1
+                     , rep(0, 40)),2))
+  ) %>%
+  ggplot(aes(name, value, fill = associated)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~y) +
+  theme_minimal()+ 
+  theme(axis.text.x=element_blank()) +
+  ggtitle("Scenario 1 - split by outcome")
+  
 ```
 
 Scenario 2
@@ -41,6 +66,27 @@ Scenario 2
 M2 <- cor(dat2 %>%
   select(starts_with("X")))
 corrplot(M2, method = "color",  title = "Scenario 2", tl.pos = 'n')
+
+dat2_long <- dat4 %>%
+  select(y, starts_with("X")) %>%
+  pivot_longer(-y, names_prefix = "X") 
+
+
+dat2_long %>%
+  group_by(y, name) %>%
+  summarise(value = sum(value), .groups = 'drop') %>%
+  ungroup() %>%
+  arrange(y, as.numeric(name)) %>%
+  mutate(
+    associated = as.factor(rep(c(0, 0, 0, 1, 0, 1, 0, 1, 1, 1
+                     , rep(0, 40)),2))
+  ) %>%
+  ggplot(aes(name, value, fill = associated)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~y) +
+  theme_minimal() + 
+  theme(axis.text.x=element_blank()) +
+  ggtitle("Scenario 4")
 ```
 
 Scenario 3

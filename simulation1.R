@@ -8,7 +8,7 @@ library(bindata)
 
 set.seed(1219)
 
-n    <- 2500
+n    <- 5000
 nvar <- 50
 n_pairs <- 25 #per z type
 z <- as.numeric(cut(1:n, quantile(1:n, seq(0, 1, .1)), include.lowest = TRUE))
@@ -31,7 +31,8 @@ sim1i_bs <- data.frame(
   mutate(bs = pmap(list(b4, b6, b8, b9, b10, b4x6, b4x8, b6x8),
                    function(x4, x6, x8, x9, x10, x46, x48, x68) {
                      c(0, 0, 0, x4, 0, x6, 0, x8, x9, x10
-                     , rep(0, 40), x46, x48, x68)
+                     , rep(0, 40))
+                     #, x46, x48, x68) # taking out interactions
                      })
   )
 
@@ -52,9 +53,9 @@ s1 <- function(r) {
   # in scenario i they are independent from each other i.e. correlation = 0
   m1 <- matrix(0, 5, 5)
   diag(m1) <- 1
-  m1
-  r1 <- rmvbin(n = n, margprob = c(.4, .6, .5, .3, .15), bincorr = m1)
-  round(cor(r1), 1)
+ # m1
+  r1 <- rmvbin(n = n, margprob = c(.4, .6, .5, .3, .15), sigma = m1)
+  #round(cor(r1), 1)
 
   #variables independent of Y given X4, X6, X8, X9, X10
   ##TODO clarify how to generate these as independent of Y given the above Xs
@@ -67,8 +68,8 @@ s1 <- function(r) {
 
   m2 <- matrix(0, 5, 5)
   diag(m2) <- 1
-  r2 <- rmvbin(n = n, margprob = c(.4, .4, .4, .25, .2), bincorr = m2)
-  round(cor(r2), 1)
+  r2 <- rmvbin(n = n, margprob = c(.4, .4, .4, .25, .2), sigma = m2)
+  #round(cor(r2), 1)
 
   # generate remaining 40 variables
   # independent of each other
@@ -87,7 +88,7 @@ s1 <- function(r) {
   r4 <- rmvbin(n = n
         , margprob = c(rep(.1, 5), rep(.2, 10), rep(.25, 10), rep(.3, 10))
         , bincorr = m4)
-  summary(round(cor(r4), 1))
+  #summary(round(cor(r4), 1))
 
   # generate NULL matrix placeholder
   xs <- matrix(rep(NA, nvar * n), ncol = nvar)
@@ -99,7 +100,7 @@ s1 <- function(r) {
   xs[, c(16:nvar)] <- r4
 
   # check that probabilities look right given setup
-  summary(xs)
+  #summary(xs)
   # yep!
 
   # add known interaction terms for easy generation of Ys
@@ -118,7 +119,7 @@ s1 <- function(r) {
 
   outcome  <- X %*% t(sim1i_bs[2:11][1, ])
   pr1      <- plogis(outcome)
-  runis    <- runif(n, 0, 1)
+  runis    <- runif(n, 0, 2) # basically ensuring there are half as many y's
   y1       <- as.numeric(runis < pr1)
 
   #now make dataframe for analysis
@@ -145,7 +146,7 @@ s1 <- function(r) {
 dat1 <- map_df(1:50, s1)
 summary(dat1)
 
-saveRDS(dat1, "data/dat1")
+saveRDS(dat1, "data2/dat1")
 
 
 
@@ -208,15 +209,16 @@ s2 <- function(r) {
     # yep!
     
     # add known interaction terms for easy generation of Ys
-    xs_inter2 <- cbind(xs2, xs2[,4]*xs2[,6], xs2[,4]*xs2[,8], xs2[,6]*xs2[,8])
+    #xs_inter2 <- cbind(xs2, xs2[,4]*xs2[,6], xs2[,4]*xs2[,8], xs2[,6]*xs2[,8])
     
-    outcome2 <- rep(sim1i_bs$a[2], n) + colSums(t(xs_inter2)*(sim1i_bs$bs[[2]])) + (sim1i_bs$gamma[2])*z
+    outcome2 <- rep(sim1i_bs$a[2], n) + colSums(t(xs2)*(sim1i_bs$bs[[2]])) + (sim1i_bs$gamma[2])*z
     
     pr2 <- exp(outcome2)/(1+exp(outcome2))
     runis2 = runif(n, 0, 1)
     y2= ifelse(runis2 < pr2, 1, 0)
     
-    summary(y2)
+    
+    #summary(y2)
     
     #now make dataframe for analysis
     
@@ -243,7 +245,7 @@ dat2 <- map_df(1:50, s2)
 summary(dat2)
 
 
-saveRDS(dat2, file = "data/dat2")
+saveRDS(dat2, file = "data2/dat2")
 
 #################
 # SCENARIO 3
@@ -310,7 +312,7 @@ m4 <- matrix(0, 35, 35)
 diag(m4) <- 1
 r4<- rmvbin(n = n, margprob = c(rep(.15, 5), rep(.2, 10), rep(.25, 10), rep(.2, 10)),
             sigma = m4)
-summary(round(cor(r4), 2))
+#summary(round(cor(r4), 2))
 
 # generate NULL matrix placeholder
 xs3 <- matrix(rep(NA, nvar*n), ncol = nvar)
@@ -324,19 +326,19 @@ xs3[,c(11:15)] <- r3
 xs3[,c(16:nvar)] <- r4
 
 # check that probabilities look right given setup
-summary(xs3)
+#summary(xs3)
 # yep!
 
 # add known interaction terms for easy generation of Ys
-xs_inter3 <- cbind(xs3, xs3[,4]*xs3[,6], xs3[,4]*xs3[,8], xs3[,6]*xs3[,8])
+#xs_inter3 <- cbind(xs3, xs3[,4]*xs3[,6], xs3[,4]*xs3[,8], xs3[,6]*xs3[,8])
 
-outcome3 <- rep(sim1i_bs$a[3], n) + colSums(t(xs_inter3)*(sim1i_bs$bs[[3]])) + (sim1i_bs$gamma[3])*z
+outcome3 <- rep(sim1i_bs$a[3], n) + colSums(t(xs3)*(sim1i_bs$bs[[3]])) + (sim1i_bs$gamma[3])*z
 
 pr3 <- exp(outcome3)/(1+exp(outcome3))
-runis3= runif(n, 0, 1)
+runis3= runif(n, 0, 2)
 y3= ifelse(runis3 < pr3, 1, 0)
 
-summary(y3)
+#summary(y3)
 
 #now make dataframe for analysis
 
@@ -352,8 +354,8 @@ dat3m <-
   mutate(id = z * 10000 + 1:n()) %>%
   group_by(z) %>%
   mutate(mcc = id %in% sample(unique(id[y == 1]), n_pairs)) %>%
-  filter(mcc) %>%
-  mutate(rep = r, mcc = NULL,  strata = NULL) %>%
+ filter(mcc) %>%
+ mutate(rep = r, mcc = NULL,  strata = NULL) %>%
   ungroup
 
 dat3m
@@ -363,7 +365,7 @@ dat3m
 dat3 <- map_df(1:50, s3)
 summary(dat3)
 
-saveRDS(dat3, file = "data/dat3")
+saveRDS(dat3, file = "data2/dat3")
 #===============================================================================
 # SCENARIO 4
 #===============================================================================
@@ -433,12 +435,12 @@ summary(xs4)
 # yep!
 
 # add known interaction terms for easy generation of Ys
-xs_inter4 <- cbind(xs4, xs4[,4]*xs4[,6], xs4[,4]*xs4[,8], xs4[,6]*xs4[,8])
+#xs_inter4 <- cbind(xs4, xs4[,4]*xs4[,6], xs4[,4]*xs4[,8], xs4[,6]*xs4[,8])
 
-outcome4 <- rep(sim1i_bs$a[4], n) + colSums(t(xs_inter4)*(sim1i_bs$bs[[4]])) + (sim1i_bs$gamma[4])*z
+outcome4 <- rep(sim1i_bs$a[4], n) + colSums(t(xs4)*(sim1i_bs$bs[[4]])) + (sim1i_bs$gamma[4])*z
 
 pr4 <- exp(outcome4)/(1+exp(outcome4))
-runis4= runif(n, 0, 1)
+runis4= runif(n, 0, 2)
 y4= ifelse(runis4 < pr4, 1, 0)
 
 summary(y4)
@@ -468,7 +470,7 @@ dat4m
 dat4 <- map_df(1:50, s4)
 summary(dat4)
 
-saveRDS(dat4, "data/dat4")
+saveRDS(dat4, "data2/dat4")
 
 # # generate matrix of bernoulli variables
 # 

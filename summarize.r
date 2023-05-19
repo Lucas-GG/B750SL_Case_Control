@@ -39,7 +39,7 @@ tibble(
     pivot_longer(cols = c("lasso", "bayes", "ridge")
     , names_to = "method", values_to = "TPR") %>%
     ggplot(aes(x = var, y = TPR, group = method, colour = method)) +
- geom_hline(yintercept = .95, linetype = 2, color = "gray25") +
+ geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_line() + geom_point() + theme_minimal()
 
 ggsave(paste0("output/", "TPR.png"), bg = "white")
@@ -70,7 +70,7 @@ tibble(
     pivot_longer(cols = c("lasso", "bayes", "ridge")
     , names_to = "method", values_to = "FPR") %>%
     ggplot(aes(x = method, y = FPR, colour = method)) +
- geom_hline(yintercept = .05, linetype = 2, color = "gray25") +
+ geom_hline(yintercept = .2, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
 ggsave(paste0("output/", "FPR.png"), bg = "white")
@@ -160,7 +160,7 @@ tibble(
     pivot_longer(cols = c("lasso", "bayes", "ridge")
     , names_to = "method", values_to = "coverage_true") %>%
     ggplot(aes(x = var, y = coverage_true, group = method, colour = method)) +
- geom_hline(yintercept = .95, linetype = 2, color = "gray25") +
+ geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_line() + geom_point() + theme_minimal()
 
 ggsave(paste0("output/", "cvg_true.png"), bg = "white")
@@ -191,7 +191,7 @@ tibble(
     pivot_longer(cols = c("lasso", "bayes", "ridge")
     , names_to = "method", values_to = "coverage_false") %>%
     ggplot(aes(x = method, y = coverage_false, colour = method)) +
- geom_hline(yintercept = .95, linetype = 2, color = "gray25") +
+ geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
 ggsave(paste0("output/", "cvg_false.png"), bg = "white")

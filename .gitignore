@@ -2,3 +2,15 @@
 .Rhistory
 .RData
 .Ruserdata
+data3/scenario1/fit_b/*
+data3/scenario1/fit_l/*
+data3/scenario1/fit_r/*
+data3/scenario2/fit_b/*
+data3/scenario2/fit_l/*
+data3/scenario2/fit_r/*
+data3/scenario3/fit_b/*
+data3/scenario3/fit_l/*
+data3/scenario3/fit_r/*
+data3/scenario4/fit_b/*
+data3/scenario4/fit_l/*
+data3/scenario4/fit_r/*

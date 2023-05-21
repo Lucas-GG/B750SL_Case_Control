@@ -2,11 +2,10 @@ library(tidyverse)
 
 pars <- readRDS("data/sim1i_bs")
 true_betas <- pars[3:7][1, ]
-folder_location = "data2/scenario2/"
 
-lasso    <- readRDS("data2/scenario2/fit_lasso.rds")
-bayes    <- readRDS("data2/scenario2/fit_bayes.rds")
-ridge    <- readRDS("data2/scenario2/fit_ridge.rds")
+lasso    <- readRDS("data/fit_lasso.rds")
+bayes    <- readRDS("data/fit_bayes.rds")
+ridge    <- readRDS("data/fit_ridge.rds")
 
 true_pred  <- c(4,  6,  8,  9, 10)
 false_pred <- (1:50) [!1:50 %in% true_pred]
@@ -43,7 +42,7 @@ tibble(
  geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_line() + geom_point() + theme_minimal()
 
-ggsave(paste0(folder_location,"output/", "TPR.png"), bg = "white")
+ggsave(paste0("output/", "TPR.png"), bg = "white")
 
 
 
@@ -74,7 +73,7 @@ tibble(
  geom_hline(yintercept = .2, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
-ggsave(paste0(folder_location,"output/", "FPR.png"), bg = "white")
+ggsave(paste0("output/", "FPR.png"), bg = "white")
 
 #===============================================================================
 ### coverage noise predictors
@@ -105,7 +104,7 @@ tibble(
     ggplot(aes(x = method, y = avg_num_true,  fill = method)) +
  geom_col() + theme_minimal() + theme(legend.position = "none")
 
-ggsave(paste0(folder_location,"output/", "avg_num_true.png"), bg = "white")
+ggsave(paste0("output/", "avg_num_true.png"), bg = "white")
 
 
 false_avg <- function(array_betas) {
@@ -133,7 +132,7 @@ tibble(
     , names_to = "method", values_to = "avg_num_false") %>%
     ggplot(aes(x = method, y = avg_num_false,  fill = method)) +
  geom_col() + theme_minimal() + theme(legend.position = "none")
-ggsave(paste0(folder_location,"output/", "avg_num_false.png"), bg = "white")
+ggsave(paste0("output/", "avg_num_false.png"), bg = "white")
 
 #===============================================================================
 ### coverage true predictors
@@ -164,7 +163,7 @@ tibble(
  geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_line() + geom_point() + theme_minimal()
 
-ggsave(paste0(folder_location,"output/", "cvg_true.png"), bg = "white")
+ggsave(paste0("output/", "cvg_true.png"), bg = "white")
 
 
 #===============================================================================
@@ -195,4 +194,4 @@ tibble(
  geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
-ggsave(paste0(folder_location,"output/", "cvg_false.png"), bg = "white")
+ggsave(paste0("output/", "cvg_false.png"), bg = "white")

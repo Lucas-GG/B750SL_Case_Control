@@ -1,19 +1,26 @@
 library(tidyverse)
-
+library(gridExtra)
 pars <- readRDS("data/sim1i_bs")
 true_betas <- pars[3:7][1, ]
 
-lasso    <- readRDS("data/fit_lasso.rds")
-bayes    <- readRDS("data/fit_bayes.rds")
-ridge    <- readRDS("data/fit_ridge.rds")
+folder_location <- "data3/scenario4/"
+output_folder <- "output/scenario4/"
+lasso    <- readRDS(paste0(folder_location, "fit_lasso.rds"))
+bayes    <- readRDS(paste0(folder_location, "fit_bayes.rds"))
+ridge    <- readRDS(paste0(folder_location, "fit_ridge.rds"))
 
 true_pred  <- c(4,  6,  8,  9, 10)
 false_pred <- (1:50) [!1:50 %in% true_pred]
 
 dimnames(bayes)[[2]] <- c("beta_hat", "beta_lw", "beta_up")
 
+dim(lasso)
+lasso[true_pred, , 1:2]
+true_betas
+
+
 #===============================================================================
-## avg # of true and false effects
+##.1.- FPR & TPR
 #===============================================================================
 # proportion of times true preictors are detected (entire CI on either side)
 tpr <- function(array_betas) {
@@ -24,13 +31,28 @@ tpr <- function(array_betas) {
             })
             , 1, mean)
     }
+fpr <- function(array_betas) {
+        apply(
+            apply(array_betas[false_pred, , ], 3, \(m) {
+                (0 > m[, "beta_lw"] & 0 > m[, "beta_up"]) |
+                (0 < m[, "beta_lw"] & 0 < m[, "beta_up"])
+                })
+            , 1, mean)
+}
 
 rbind(
-    round(tpr(lasso), 3),
-    round(tpr(bayes), 3),
-    round(tpr(ridge), 3)
+    round(mean(tpr(lasso)), 3),
+    round(mean(tpr(bayes)), 3),
+    round(mean(tpr(ridge)), 3)
 )
 
+rbind(
+summary(fpr(lasso)),
+summary(fpr(lasso)),
+summary(fpr(lasso))
+)
+
+g11 <-
 tibble(
     var = paste0("X", true_pred),
     lasso = tpr(lasso),
@@ -42,27 +64,7 @@ tibble(
  geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_line() + geom_point() + theme_minimal()
 
-ggsave(paste0("output/", "TPR.png"), bg = "white")
-
-
-
-
-
-fpr <- function(array_betas) {
-        apply(
-            apply(array_betas[false_pred, , ], 3, \(m) {
-                (0 > m[, "beta_lw"] & 0 > m[, "beta_up"]) |
-                (0 < m[, "beta_lw"] & 0 < m[, "beta_up"])
-                })
-            , 1, mean)
-}
-
-rbind(
-summary(fpr(lasso)),
-summary(fpr(lasso)),
-summary(fpr(lasso))
-)
-
+g12 <-
 tibble(
     lasso = fpr(lasso),
     bayes = fpr(bayes),
@@ -73,69 +75,82 @@ tibble(
  geom_hline(yintercept = .2, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
-ggsave(paste0("output/", "FPR.png"), bg = "white")
+grid.arrange(g11, g12, nrow = 1)
+png(paste0(output_folder, "TPR_FPR.png")
+    , width = 480 * 6, heigh = 480 * 2.5, res = 300)
+grid.arrange(g11, g12, nrow = 1)
+dev.off()
+
 
 #===============================================================================
-### coverage noise predictors
+##.2.- Number of predictors
 #===============================================================================
 
-true_avg <- function(array_betas) {
-    mean(
+true_num <- function(array_betas) {
         apply(
             apply(array_betas[true_pred, , ], 3, \(m) {
                 (0 > m[, "beta_lw"] & 0 > m[, "beta_up"]) |
                 (0 < m[, "beta_lw"] & 0 < m[, "beta_up"])
                 })
             , 2, sum)
-    )
 }
-rbind(
-round(true_avg(lasso), 3),
-round(true_avg(bayes), 3),
-round(true_avg(ridge), 3)
-)
 
-tibble(
-    lasso = true_avg(lasso),
-    bayes = true_avg(bayes),
-    ridge = true_avg(ridge)) %>%
-    pivot_longer(cols = c("lasso", "bayes", "ridge")
-    , names_to = "method", values_to = "avg_num_true") %>%
-    ggplot(aes(x = method, y = avg_num_true,  fill = method)) +
- geom_col() + theme_minimal() + theme(legend.position = "none")
-
-ggsave(paste0("output/", "avg_num_true.png"), bg = "white")
-
-
-false_avg <- function(array_betas) {
-    mean(
+false_num <- function(array_betas) {
         apply(
             apply(array_betas[false_pred, , ], 3, \(m) {
                 (0 > m[, "beta_lw"] & 0 > m[, "beta_up"]) |
                 (0 < m[, "beta_lw"] & 0 < m[, "beta_up"])
                 })
             , 2, sum)
-    )
 }
 
 rbind(
-round(false_avg(lasso), 3),
-round(false_avg(bayes), 3),
-round(false_avg(ridge), 3)
+    summary(true_num(lasso)),
+    summary(true_num(bayes)),
+    summary(true_num(ridge))
 )
 
+rbind(
+    summary(false_num(lasso)),
+    summary(false_num(bayes)),
+    summary(false_num(ridge))
+)
+
+g21 <-
 tibble(
-    lasso = false_avg(lasso),
-    bayes = false_avg(bayes),
-    ridge = false_avg(ridge)) %>%
+    lasso = tail(c(NA * 1:150, true_num(lasso)), 150),
+    bayes = true_num(bayes),
+    ridge = true_num(ridge)) %>%
     pivot_longer(cols = c("lasso", "bayes", "ridge")
-    , names_to = "method", values_to = "avg_num_false") %>%
-    ggplot(aes(x = method, y = avg_num_false,  fill = method)) +
- geom_col() + theme_minimal() + theme(legend.position = "none")
-ggsave(paste0("output/", "avg_num_false.png"), bg = "white")
+    , names_to = "method", values_to = "number_true") %>%
+    ggplot(aes(x = method, y = number_true, colour = method)) +
+ geom_boxplot() + theme_minimal() + theme(legend.position = "none") +
+   stat_summary(fun = mean, colour = "darkred", geom = "point",
+               shape = 18, size = 3, show.legend = FALSE)
+
+
+g22 <-
+tibble(
+    lasso = tail(c(NA * 1:150, false_num(lasso)), 150),
+    bayes = false_num(bayes),
+    ridge = false_num(ridge)) %>%
+    pivot_longer(cols = c("lasso", "bayes", "ridge")
+    , names_to = "method", values_to = "number_false") %>%
+    ggplot(aes(x = method, y = number_false, colour = method)) +
+ geom_boxplot() + theme_minimal() + theme(legend.position = "none") +
+   stat_summary(fun = mean, colour = "darkred", geom = "point",
+               shape = 18, size = 3, show.legend = FALSE)
+
+
+grid.arrange(g21, g22, nrow = 1)
+png(paste0(output_folder, "num_true_false.png")
+    , width = 480 * 6, heigh = 480 * 2.5, res = 300)
+grid.arrange(g21, g22, nrow = 1)
+dev.off()
+
 
 #===============================================================================
-### coverage true predictors
+##.3.- Coverage
 #===============================================================================
 
 true_cvg <- function(array_betas) {
@@ -146,29 +161,6 @@ true_cvg <- function(array_betas) {
         , 1, mean)
 }
 
-rbind(
-    round(true_cvg(lasso), 3),
-    round(true_cvg(bayes), 3),
-    round(true_cvg(ridge), 3)
-    )
-
-tibble(
-    var = paste0("X", true_pred),
-    lasso = true_cvg(lasso),
-    bayes = true_cvg(bayes),
-    ridge = true_cvg(ridge)) %>%
-    pivot_longer(cols = c("lasso", "bayes", "ridge")
-    , names_to = "method", values_to = "coverage_true") %>%
-    ggplot(aes(x = var, y = coverage_true, group = method, colour = method)) +
- geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
- geom_line() + geom_point() + theme_minimal()
-
-ggsave(paste0("output/", "cvg_true.png"), bg = "white")
-
-
-#===============================================================================
-### coverage noise predictors
-#===============================================================================
 zero <- rep(0, length(false_pred))
 
 false_cvg <- function(array_betas) {
@@ -180,10 +172,30 @@ false_cvg <- function(array_betas) {
 }
 
 rbind(
+    round(true_cvg(lasso), 3),
+    round(true_cvg(bayes), 3),
+    round(true_cvg(ridge), 3)
+    )
+
+rbind(
     round(summary(false_cvg(lasso)), 3),
     round(summary(false_cvg(bayes)), 3),
     round(summary(false_cvg(ridge)), 3))
 
+
+g31 <-
+tibble(
+    var = paste0("X", true_pred),
+    lasso = true_cvg(lasso),
+    bayes = true_cvg(bayes),
+    ridge = true_cvg(ridge)) %>%
+    pivot_longer(cols = c("lasso", "bayes", "ridge")
+    , names_to = "method", values_to = "coverage_true") %>%
+    ggplot(aes(x = var, y = coverage_true, group = method, colour = method)) +
+ geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
+ geom_line() + geom_point() + theme_minimal()
+
+g32 <-
 tibble(
     lasso = false_cvg(lasso),
     bayes = false_cvg(bayes),
@@ -194,4 +206,8 @@ tibble(
  geom_hline(yintercept = .8, linetype = 2, color = "gray25") +
  geom_boxplot() + theme_minimal() + theme(legend.position = "none")
 
-ggsave(paste0("output/", "cvg_false.png"), bg = "white")
+grid.arrange(g31, g32, nrow = 1)
+png(paste0(output_folder, "Coverage.png")
+    , width = 480 * 6, heigh = 480 * 2.5, res = 300)
+grid.arrange(g31, g32, nrow = 1)
+dev.off()

@@ -143,10 +143,7 @@ s1 <- function(r) {
   dat1m
 }
 
-dat1 <- map_df(1:50, s1)
-summary(dat1)
 
-saveRDS(dat1, "data2/dat1")
 
 
 
@@ -241,15 +238,11 @@ s2 <- function(r) {
     dat2m
 }
 
-dat2 <- map_df(1:50, s2)
-summary(dat2)
 
 
-saveRDS(dat2, file = "data2/dat2")
-
-#################
+###################################################
 # SCENARIO 3
-#################
+###################################################
 
 #simulate the correlated bernoulli vars
 # followed this procedure https://stackoverflow.com/questions/59595292/simulating-correlated-bernoulli-data
@@ -362,10 +355,7 @@ dat3m
 
 }
 
-dat3 <- map_df(1:50, s3)
-summary(dat3)
 
-saveRDS(dat3, file = "data2/dat3")
 #===============================================================================
 # SCENARIO 4
 #===============================================================================
@@ -467,10 +457,6 @@ dat4m
 
 }
 
-dat4 <- map_df(1:50, s4)
-summary(dat4)
-
-saveRDS(dat4, "data2/dat4")
 
 # # generate matrix of bernoulli variables
 # 

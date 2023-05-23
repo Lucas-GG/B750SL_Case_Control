@@ -1,10 +1,14 @@
 library(tidyverse)
 library(gridExtra)
 pars <- readRDS("data/sim1i_bs")
-true_betas <- pars[3:7][1, ]
 
-folder_location <- "data3/scenario4/"
-output_folder <- "output/scenario4/"
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+s <- 4
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+true_betas <- pars[3:7][s, ]; true_betas
+folder_location <- paste0("data3/scenario", s, "/")
+output_folder <- paste0("output/scenario", s, "/")
+
 lasso    <- readRDS(paste0(folder_location, "fit_lasso.rds"))
 bayes    <- readRDS(paste0(folder_location, "fit_bayes.rds"))
 ridge    <- readRDS(paste0(folder_location, "fit_ridge.rds"))
